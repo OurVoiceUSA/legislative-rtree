@@ -8,10 +8,22 @@ import fs from 'fs';
 import rbush from 'rbush';
 import {ingeojson} from 'ourvoiceusa-sdk-js';
 
+if (!process.argv[2] || !process.argv[3]) {
+  console.warn("Usage: node node_modules/@babel/node/lib/_babel-node search-rtree.js LONGITUDE LATITUDE");
+  process.exit(1);
+}
+
+var lng = parseFloat(process.argv[2]);
+var lat = parseFloat(process.argv[3]);
+
+if (isNaN(lng) || isNaN(lat)) {
+  console.warn("Invalid parameter to longitude or latitude.");
+  process.exit(1);
+}
+
 var tree = rbush(9).fromJSON(JSON.parse(fs.readFileSync('./rtree.json')));
 
-var lng = -120;
-var lat = 39;
+var found = 0;
 
 tree.search({
   minX: lng,
@@ -21,8 +33,11 @@ tree.search({
 }).forEach(bb => {
   if (rtree2pip(bb, lng, lat)) {
     console.log("You are located in "+bb.state+" "+bb.type+" "+bb.name);
+    found++;
   }
 });
+
+if (found === 0) console.warn("Not found in rtree index.");
 
 function rtree2pip(bb, lng, lat) {
   let file;
