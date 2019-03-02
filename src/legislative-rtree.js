@@ -1,49 +1,18 @@
 import rbush from 'rbush';
 import {ingeojson} from 'ourvoiceusa-sdk-js';
 
-async function rtree2pip(bb, lng, lat) {
-  let uri_base = 'https://raw.githubusercontent.com/OurVoiceUSA/districts/gh-pages/';
-  let file;
-
-  switch (bb.type) {
-  case 'state':
-    file = uri_base+'/states/'+bb.state+'/shape.geojson';
-    break;
-  case 'sldl':
-  case 'sldu':
-    file = uri_base+'/states/'+bb.state+'/'+bb.type+'/'+bb.name+'.geojson';
-    break;
-  case 'cd':
-    file = uri_base+'/cds/2016/'+bb.name+'/shape.geojson';
-    break;
-  default:
-    console.warn("Unknown district type");
-    return false;
-  }
-
-  try {
-    let res = await fetch(file);
-    let geo = await res.json();
-    if (geo.geometry) geo = geo.geometry;
-    if (ingeojson(geo, lng, lat)) {
-      return true;
-    }
-  } catch (e) {
-    console.warn(e);
-  }
-  return false;
-}
-
 export default class App {
   constructor(props) {
-    if (props && props.index)
+    if (props) {
       this.index = props.index;
-    else
-      this.index = './rtree.json';
+      this.fetch = props.fetch;
+    }
+    if (!this.index) this.index = './rtree.json';
+    if (!this.fetch) this.fetch = fetch;
   }
 
   _init = async () => {
-    let res = await fetch(this.index);
+    let res = await this.fetch(this.index);
     let rtree = await res.json();
     this.tree = rbush(9).fromJSON(rtree);
   }
@@ -62,7 +31,7 @@ export default class App {
       maxY: lat,
     }).forEach(bb => {
       bbs.push(bb);
-      prom.push(rtree2pip(bb, lng, lat));
+      prom.push(this.rtree2pip(bb, lng, lat));
     });
 
     let ret = await Promise.all(prom);
@@ -74,6 +43,39 @@ export default class App {
     });
 
     return districts;
+  }
+
+  rtree2pip = async (bb, lng, lat) => {
+    let uri_base = 'https://raw.githubusercontent.com/OurVoiceUSA/districts/gh-pages/';
+    let file;
+
+    switch (bb.type) {
+    case 'state':
+      file = uri_base+'/states/'+bb.state+'/shape.geojson';
+      break;
+    case 'sldl':
+    case 'sldu':
+      file = uri_base+'/states/'+bb.state+'/'+bb.type+'/'+bb.name+'.geojson';
+      break;
+    case 'cd':
+      file = uri_base+'/cds/2016/'+bb.name+'/shape.geojson';
+      break;
+    default:
+      console.warn("Unknown district type");
+      return false;
+    }
+
+    try {
+      let res = await this.fetch(file);
+      let geo = await res.json();
+      if (geo.geometry) geo = geo.geometry;
+      if (ingeojson(geo, lng, lat)) {
+        return true;
+      }
+    } catch (e) {
+      console.warn(e);
+    }
+    return false;
   }
 
 }
