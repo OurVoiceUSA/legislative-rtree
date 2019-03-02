@@ -4,7 +4,7 @@
 
 */
 
-import LRTree from './src/legislative-rtree';
+import LRTree from './index.js';
 
 if (!process.argv[2] || !process.argv[3]) {
   console.warn("Usage: node node_modules/@babel/node/lib/_babel-node search-rtree.js LONGITUDE LATITUDE");
