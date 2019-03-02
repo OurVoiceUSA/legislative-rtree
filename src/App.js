@@ -52,9 +52,6 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    let perPage = localStorage.getItem('teamsperpage');
-    if (!perPage) perPage = 5;
-
     this.state = {
       districts: [],
     };
