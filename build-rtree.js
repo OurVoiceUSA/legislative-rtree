@@ -48,7 +48,7 @@ async function doYerThang() {
     geojson2rtree('./districts/cds/2016/'+cd+'/shape.geojson', cd.split('-')[0], 'cd', cd);
   });
 
-  fs.writeFileSync('./rtree.json', JSON.stringify(tree.toJSON()));
+  fs.writeFileSync('./public/rtree.json', JSON.stringify(tree.toJSON()));
 
   process.exit(0);
 }
