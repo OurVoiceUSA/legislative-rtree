@@ -7,7 +7,7 @@ export default class App {
     if (props) {
       this.index = props.index;
     }
-    if (!this.index) this.index = './rtree.json';
+    if (!this.index) this.index = 'https://raw.githubusercontent.com/OurVoiceUSA/legislative-rtree/master/rtree.json';
   }
 
   async _init() {
