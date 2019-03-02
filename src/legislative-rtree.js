@@ -1,18 +1,17 @@
 import rbush from 'rbush';
+import fetch from 'node-fetch';
 import {ingeojson} from 'ourvoiceusa-sdk-js';
 
 export default class App {
   constructor(props) {
     if (props) {
       this.index = props.index;
-      this.fetch = props.fetch;
     }
     if (!this.index) this.index = './rtree.json';
-    if (!this.fetch) this.fetch = fetch;
   }
 
   _init = async () => {
-    let res = await this.fetch(this.index);
+    let res = await fetch(this.index);
     let rtree = await res.json();
     this.tree = rbush(9).fromJSON(rtree);
   }
@@ -66,7 +65,7 @@ export default class App {
     }
 
     try {
-      let res = await this.fetch(file);
+      let res = await fetch(file);
       let geo = await res.json();
       if (geo.geometry) geo = geo.geometry;
       if (ingeojson(geo, lng, lat)) {

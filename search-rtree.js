@@ -5,7 +5,6 @@
 */
 
 import LRTree from './src/legislative-rtree';
-import fetch from 'node-fetch';
 
 if (!process.argv[2] || !process.argv[3]) {
   console.warn("Usage: node node_modules/@babel/node/lib/_babel-node search-rtree.js LONGITUDE LATITUDE");
@@ -20,7 +19,7 @@ if (isNaN(lng) || isNaN(lat)) {
   process.exit(1);
 }
 
-var tree = new LRTree({fetch: fetch, index: 'https://raw.githubusercontent.com/OurVoiceUSA/legislative-rtree/master/public/rtree.json'});
+var tree = new LRTree({index: 'https://raw.githubusercontent.com/OurVoiceUSA/legislative-rtree/master/public/rtree.json'});
 
 doYerThang();
 
@@ -34,4 +33,3 @@ async function doYerThang() {
 
   process.exit(0);
 }
-
