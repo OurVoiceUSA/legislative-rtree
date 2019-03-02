@@ -19,7 +19,7 @@ if (isNaN(lng) || isNaN(lat)) {
   process.exit(1);
 }
 
-var tree = new LRTree({index: 'https://raw.githubusercontent.com/OurVoiceUSA/legislative-rtree/master/public/rtree.json'});
+var tree = new LRTree({index: 'https://raw.githubusercontent.com/OurVoiceUSA/legislative-rtree/master/rtree.json'});
 
 doYerThang();
 
