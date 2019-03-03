@@ -5,6 +5,7 @@
 */
 
 import LRTree from './index.js';
+import fs from 'fs';
 
 if (!process.argv[2] || !process.argv[3]) {
   console.warn("Usage: node node_modules/@babel/node/lib/_babel-node search-rtree.js LONGITUDE LATITUDE");
@@ -19,7 +20,7 @@ if (isNaN(lng) || isNaN(lat)) {
   process.exit(1);
 }
 
-var tree = new LRTree();
+var tree = new LRTree({index: JSON.parse(fs.readFileSync('./rtree.json'))});
 
 doYerThang();
 

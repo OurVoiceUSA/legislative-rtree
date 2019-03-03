@@ -11,8 +11,13 @@ export default class App {
   }
 
   async _init() {
-    let res = await fetch(this.index);
-    let rtree = await res.json();
+    let rtree;
+    if (typeof this.index === 'object') {
+      rtree = this.index;
+    } else {
+      let res = await fetch(this.index);
+      rtree = await res.json();
+    }
     this.tree = rbush(9).fromJSON(rtree);
   }
 
@@ -59,6 +64,9 @@ export default class App {
     case 'cd':
       file = uri_base+'/cds/2016/'+bb.name+'/shape.geojson';
       break;
+    case 'city':
+      // TODO: for now, assume city bbox as city. Need to fetch geojson from repo when cities are added to it
+      return true;
     default:
       console.warn("Unknown district type");
       return false;

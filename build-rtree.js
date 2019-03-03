@@ -44,6 +44,19 @@ async function doYerThang() {
 
   });
 
+  // this isn't in the districts ... yet
+  try  {
+    let us_cities = JSON.parse(fs.readFileSync('./us_cities.geojson'));
+
+    await asyncForEach(us_cities.features, async (city) => {
+      if (city.geometry) {
+        geojson2rtree(city.geometry, city.properties.state, 'city', city.properties.city);
+      }
+    });
+  } catch (e) {
+    console.warn(e);
+  }
+
   await asyncForEach(fs.readdirSync('./districts/cds/2016/'), async (cd) => {
     geojson2rtree('./districts/cds/2016/'+cd+'/shape.geojson', cd.split('-')[0], 'cd', cd);
   });
@@ -55,7 +68,11 @@ async function doYerThang() {
 
 function geojson2rtree(file, state, type, name) {
   try {
-    let geo = JSON.parse(fs.readFileSync(file))
+    let geo;
+    if (typeof file === 'object')
+      geo = file;
+    else
+      geo = JSON.parse(fs.readFileSync(file))
     if (geo.geometry) geo = geo.geometry;
     let bb = bbox(geo);
     tree.insert({minX: bb[0], minY: bb[1], maxX: bb[2], maxY: bb[3], state: state, type: type, name: name})
