@@ -20,7 +20,7 @@ if (isNaN(lng) || isNaN(lat)) {
   process.exit(1);
 }
 
-var tree = new LRTree({index: JSON.parse(fs.readFileSync('./rtree.json'))});
+var tree = new LRTree();
 
 doYerThang();
 

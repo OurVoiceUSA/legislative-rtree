@@ -1,13 +1,15 @@
+
 import rbush from 'rbush';
 import fetch from 'node-fetch';
-import {ingeojson} from 'ourvoiceusa-sdk-js';
+import {asyncForEach,ingeojson} from 'ourvoiceusa-sdk-js';
 
 export default class App {
   constructor(props) {
     if (props) {
       this.index = props.index;
     }
-    if (!this.index) this.index = 'https://raw.githubusercontent.com/OurVoiceUSA/legislative-rtree/master/rtree.json';
+    if (!this.base_uri) this.base_uri = 'https://raw.githubusercontent.com/OurVoiceUSA/ocd-json/master/ocd-division/country/us';
+    if (!this.index) this.index = this.base_uri+'/rtree.json';
   }
 
   async _init() {
@@ -40,9 +42,15 @@ export default class App {
 
     let ret = await Promise.all(prom);
 
-    bbs.forEach((bb, idx) => {
+    await asyncForEach(bbs, async(bb, idx) => {
       if (ret[idx]) {
         districts.push(bb);
+        if (bb.subtree) {
+          // call self to get subtree districts
+          let tree = new App({index: this.base_uri+'/'+bb.subtree});
+          let subd = await tree.getDistricts(lng, lat);
+          districts = districts.concat(subd);
+        }
       }
     });
 
@@ -50,22 +58,20 @@ export default class App {
   }
 
   async rtree2pip(bb, lng, lat) {
-    let uri_base = 'https://raw.githubusercontent.com/OurVoiceUSA/districts/gh-pages/';
     let file;
 
     switch (bb.type) {
     case 'state':
-      file = uri_base+'/states/'+bb.state+'/shape.geojson';
+      file = this.base_uri+'/state/'+bb.state.toLowerCase()+'/shape.geojson';
       break;
     case 'sldl':
     case 'sldu':
-      file = uri_base+'/states/'+bb.state+'/'+bb.type+'/'+bb.name+'.geojson';
-      break;
     case 'cd':
-      file = uri_base+'/cds/2016/'+bb.name+'/shape.geojson';
+      file = this.base_uri+'/state/'+bb.state.toLowerCase()+'/'+bb.type+'/'+bb.name+'/shape.geojson';
       break;
-    case 'city':
-      // TODO: for now, assume city bbox as city. Need to fetch geojson from repo when cities are added to it
+    case 'place':
+    case 'county':
+      // TODO: for now, assume place bbox as place. Need to fetch geojson from repo when places are added to it
       return true;
     default:
       console.warn("Unknown district type");
