@@ -1,7 +1,7 @@
 
 import rbush from 'rbush';
 import fetch from 'node-fetch';
-import {asyncForEach,ingeojson} from 'ourvoiceusa-sdk-js';
+import {asyncForEach,deepCopy,ingeojson} from 'ourvoiceusa-sdk-js';
 
 export default class App {
   constructor(props) {
@@ -61,7 +61,7 @@ export default class App {
     let info = {
       kind: "civicinfo#representativeInfoResponse",
       status: "success",
-      divisions: [],
+      divisions: {},
       offices: [],
       officials: [],
     };
@@ -89,16 +89,17 @@ export default class App {
         // got a non-200 status, skip
         return;
       }
-      let obj = {};
-      obj[d.div] = division;
-
       // TODO: add officeIndices
-      info.divisions.push(obj);
+      info.divisions[d.div] = deepCopy(division);
 
+      // scrub out-of-spec
+      delete info.divisions[d.div].offices;
+      
       // TODO: add officeIndices
       info.offices = info.offices.concat(division.offices);
 
       info.officials = info.officials.concat(officials);
+
     });
 
     return info;
