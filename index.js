@@ -8,8 +8,8 @@ export default class App {
     if (props) {
       this.index = props.index;
     }
-    if (!this.base_uri) this.base_uri = 'https://raw.githubusercontent.com/OurVoiceUSA/ocd-json/master/ocd-division/country/us';
-    if (!this.index) this.index = this.base_uri+'/rtree.json';
+    if (!this.base_uri) this.base_uri = 'https://raw.githubusercontent.com/OurVoiceUSA/ocd-json/master';
+    if (!this.index) this.index = this.base_uri+'/ocd-division/country/us/rtree.json';
   }
 
   async _init() {
@@ -47,7 +47,7 @@ export default class App {
         districts.push(bb);
         if (bb.subtree) {
           // call self to get subtree districts
-          let tree = new App({index: this.base_uri+'/'+bb.subtree});
+          let tree = new App({index: this.base_uri+'/ocd-division/country/us/'+bb.subtree});
           let subd = await tree.getDistricts(lng, lat);
           districts = districts.concat(subd);
         }
@@ -57,17 +57,64 @@ export default class App {
     return districts;
   }
 
+  async mimicGoogleCivicsAPI(lng, lat) {
+    let info = {
+      kind: "civicinfo#representativeInfoResponse",
+      status: "success",
+      divisions: [],
+      offices: [],
+      officials: [],
+    };
+
+    let districts = await this.getDistricts(lng, lat);
+    let promd = [];
+    let promo = [];
+
+    // fetch all the division.json and officials.json files
+    districts.forEach(bb => {
+      let url = this.base_uri+'/'+bb.div.replace(/:/g, '/');
+      promd.push(fetch(url+'/division.json'));
+      promo.push(fetch(url+'/officials.json'));
+    });
+
+    let resd = await Promise.all(promd);
+    let reso = await Promise.all(promo);
+
+    await asyncForEach(districts, async(d, idx) => {
+      let division, officials;
+      try {
+        division = await resd[idx].json();
+        officials = await reso[idx].json();
+      } catch (e) {
+        // got a non-200 status, skip
+        return;
+      }
+      let obj = {};
+      obj[d.div] = division;
+
+      // TODO: add officeIndices
+      info.divisions.push(obj);
+
+      // TODO: de-dupe offices
+      if (officials) officials.forEach(o => info.offices = info.offices.concat(o.office));
+
+      info.officials = info.officials.concat(officials);
+    });
+
+    return info;
+  }
+
   async rtree2pip(bb, lng, lat) {
     let file;
 
     switch (bb.type) {
     case 'state':
-      file = this.base_uri+'/state/'+bb.state.toLowerCase()+'/shape.geojson';
+      file = this.base_uri+'/ocd-division/country/us/state/'+bb.state.toLowerCase()+'/shape.geojson';
       break;
     case 'sldl':
     case 'sldu':
     case 'cd':
-      file = this.base_uri+'/state/'+bb.state.toLowerCase()+'/'+bb.type+'/'+bb.name+'/shape.geojson';
+      file = this.base_uri+'/ocd-division/country/us/state/'+bb.state.toLowerCase()+'/'+bb.type+'/'+bb.name+'/shape.geojson';
       break;
     case 'place':
     case 'county':
