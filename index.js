@@ -95,8 +95,8 @@ export default class App {
       // TODO: add officeIndices
       info.divisions.push(obj);
 
-      // TODO: de-dupe offices
-      if (officials) officials.forEach(o => info.offices = info.offices.concat(o.office));
+      // TODO: add officeIndices
+      info.offices = info.offices.concat(division.offices);
 
       info.officials = info.officials.concat(officials);
     });
