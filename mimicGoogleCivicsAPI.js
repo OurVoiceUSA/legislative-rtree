@@ -28,7 +28,7 @@ async function doYerThang() {
 
   let info = await tree.mimicGoogleCivicsAPI(lng, lat);
 
-  console.log(info);
+  console.log(JSON.stringify(info, null, 2));
 
   process.exit(0);
 }
