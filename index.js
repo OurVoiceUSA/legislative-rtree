@@ -1,5 +1,5 @@
 
-import rbush from 'rbush';
+import RBush from 'rbush';
 import fetch from 'node-fetch';
 import {asyncForEach,deepCopy,ingeojson} from 'ourvoiceusa-sdk-js';
 
