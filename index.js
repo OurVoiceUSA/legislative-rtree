@@ -20,7 +20,7 @@ export default class App {
       let res = await fetch(this.index);
       rtree = await res.json();
     }
-    this.tree = rbush(9).fromJSON(rtree);
+    this.tree = new RBush(9).fromJSON(rtree);
   }
 
   async getDistricts(lng, lat) {
